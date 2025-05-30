@@ -30,9 +30,8 @@ def preprocess_data(df):
     #     scaler = joblib.load('models/scaler.joblib')
     #     df[numerical_features] = scaler.transform(df[numerical_features])
     # except FileNotFoundError:
-    #     # FIX E501 here: Break comment line more
-    #     print("Scaler not found. Assuming data is already "
-    #           "scaled or no scaling needed.")
+    #     # FIX E501 here: Shorten comment for compliance
+    #     print("Scaler not found. Assuming data is already scaled.")
     #     # Or train a new scaler if this function is used for training data prep
 
     return df
