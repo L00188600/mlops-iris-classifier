@@ -13,13 +13,15 @@ from sklearn.datasets import load_iris
 @pytest.fixture(scope='session', autouse=True)
 def setup_model_for_tests():
     model_dir = 'models'
-    model_path = os.path.join(model_dir,
-                               'iris_logistic_regression_model.joblib')
+    # FIX E127 here: Break long path construction and align arguments
+    model_path = os.path.join(
+        model_dir,
+        'iris_logistic_regression_model.joblib'
+    )
 
     if not os.path.exists(model_path):
         os.makedirs(model_dir, exist_ok=True)
         # Create a dummy joblib file if it doesn't exist for testing purposes
-        # FIX E501 here: Shorten comment for compliance
         # In a real scenario, your CI pipeline builds/provides the model.
         print(f"Creating dummy model at {model_path} for testing...")
         try:
