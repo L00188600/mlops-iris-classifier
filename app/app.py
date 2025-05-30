@@ -66,10 +66,11 @@ def predict():
             'prediction_proba': prediction_proba
         })
     except KeyError as e:
-        # FIX E501 here by creating a variable for the long error message
+        # FIX E501 and E128: Split error message for strict compliance
         error_msg = (
             f"Missing expected feature: {e}. "
-            f"Please provide all features: {feature_names}"
+            "Please provide all features: "
+            f"{feature_names}"
         )
         return jsonify({"error": error_msg}), 400
     except Exception as e:
