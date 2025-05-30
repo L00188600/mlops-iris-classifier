@@ -1,4 +1,3 @@
-# app/app.py
 from flask import Flask, request, jsonify
 import joblib
 import pandas as pd
@@ -34,12 +33,11 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     if model is None:
-        return jsonify({
-            "error": (
-                "Model not loaded. "
-                "Please check server logs."
-            )
-        }), 500
+        error_msg = (
+            "Model not loaded. "
+            "Please check server logs."
+        )
+        return jsonify({"error": error_msg}), 500
 
     try:
         json_data = request.get_json(force=True)
@@ -69,7 +67,6 @@ def predict():
             'prediction_proba': prediction_proba
         })
     except KeyError as e:
-        # FIX E501 and E128: Split error message for strict compliance
         error_msg = (
             f"Missing expected feature: {e}. "
             "Please provide all features: "
