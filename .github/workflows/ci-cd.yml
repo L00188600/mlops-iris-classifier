@@ -90,6 +90,12 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v2'
 
+      # NEW/MODIFIED STEP: Set up SSH agent with private key
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.8.0 # Use a specific version for stability
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
       - name: Deploy to Google Cloud VM
         env:
           VM_INSTANCE_NAME: ${{ secrets.VM_INSTANCE_NAME }}
@@ -98,8 +104,6 @@ jobs:
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           IMAGE_NAME: mlops-iris-classifier
         run: |
-          # Add the private SSH key to the SSH agent
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
 
           # Ensure strict host key checking is off for CI/CD for first connection or if VM reboots
           # In production, consider pre-adding host keys or more robust host key management
