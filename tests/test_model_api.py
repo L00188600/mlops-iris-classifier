@@ -11,7 +11,9 @@ from sklearn.datasets import load_iris
 @pytest.fixture(scope='session', autouse=True)
 def setup_model_for_tests():
     model_dir = 'models'
-    model_path = os.path.join(model_dir, 'iris_logistic_regression_model.joblib')
+    model_path = os.path.join(
+        model_dir, 'iris_logistic_regression_model.joblib'
+    )
 
     if not os.path.exists(model_path):
         os.makedirs(model_dir, exist_ok=True)
