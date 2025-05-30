@@ -1,6 +1,6 @@
 # tests/test_model_api.py
 import pytest
-from app import app  # Import the Flask app instance
+from app.app import app  # Import the Flask
 import json
 import os
 import joblib
