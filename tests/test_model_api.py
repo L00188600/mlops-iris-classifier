@@ -13,14 +13,15 @@ from sklearn.datasets import load_iris
 @pytest.fixture(scope='session', autouse=True)
 def setup_model_for_tests():
     model_dir = 'models'
-    model_path = os.path.join(model_dir, 'iris_logistic_regression_model.joblib')
+    model_path = os.path.join(model_dir,
+                              'iris_logistic_regression_model.joblib')
 
     if not os.path.exists(model_path):
         os.makedirs(model_dir, exist_ok=True)
         # Create a dummy joblib file if it doesn't exist for testing purposes
-        # Changed this line for E501 compliance
-        # In a real scenario, you'd ensure your CI pipeline builds/provides the
-        # model
+        # FIX E501 here: Break comment line more
+        # In a real scenario, you'd ensure your CI pipeline builds/provides
+        # the model
         print(f"Creating dummy model at {model_path} for testing...")
         try:
             iris = load_iris()
@@ -104,5 +105,6 @@ def test_home_endpoint(client):
     """Test the home endpoint."""
     response = client.get('/')
     assert response.status_code == 200
+    # FIX E128 here: Re-aligned for visual indent
     assert b"MLOps Iris Prediction API. Use /predict endpoint." \
            in response.data
