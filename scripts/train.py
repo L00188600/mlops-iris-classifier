@@ -31,7 +31,8 @@ def train_model():
     # Ensure the 'models' directory exists
     model_dir = 'models'
     os.makedirs(model_dir, exist_ok=True)
-    model_path = os.path.join(model_dir, 'iris_logistic_regression_model.joblib')
+    model_path = os.path.join(model_dir,
+                              'iris_logistic_regression_model.joblib')
 
     print(f"Saving model to {model_path}...")
     joblib.dump(model, model_path)

@@ -34,7 +34,8 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     if model is None:
-        return jsonify({"error": "Model not loaded. Please check server logs."}), \
+        return jsonify({"error": "Model not loaded. "
+                                 "Please check server logs."}), \
             500
 
     try:
@@ -66,7 +67,8 @@ def predict():
         })
     except KeyError as e:
         return jsonify({"error": f"Missing expected feature: {e}. "
-                                 f"Please provide all features: {feature_names}"}), \
+                                 f"Please provide all features: "
+                                 f"{feature_names}"}), \
             400
     except Exception as e:
         return jsonify({"error": str(e)}), 400

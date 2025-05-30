@@ -18,7 +18,8 @@ def setup_model_for_tests():
     if not os.path.exists(model_path):
         os.makedirs(model_dir, exist_ok=True)
         # Create a dummy joblib file if it doesn't exist for testing purposes
-        # In a real scenario, you'd ensure your CI pipeline builds/provides the model
+        # In a real scenario, you'd ensure your CI pipeline builds/provides
+        # the model
         print(f"Creating dummy model at {model_path} for testing...")
         try:
             iris = load_iris()
@@ -26,7 +27,8 @@ def setup_model_for_tests():
             dummy_model.fit(iris.data, iris.target)
             joblib.dump(dummy_model, model_path)
         except ImportError:
-            # Fallback if sklearn/joblib not available during setup fixture itself
+            # Fallback if sklearn/joblib not available during setup fixture
+            # itself
             with open(model_path, 'w') as f:
                 f.write("dummy content")  # Just ensure the file exists
         print("Dummy model setup complete.")

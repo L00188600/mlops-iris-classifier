@@ -1,5 +1,4 @@
 # tests/test_preprocessing.py
-import pytest
 import pandas as pd
 from scripts.preprocess import preprocess_data
 
