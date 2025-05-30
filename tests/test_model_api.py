@@ -1,10 +1,15 @@
 # tests/test_model_api.py
 import pytest
-from app import app # Import the Flask app instance
+from app import app  # Import the Flask app instance
 import json
 import os
+import joblib
+from sklearn.linear_model import LogisticRegression
+from sklearn.datasets import load_iris
+
 
 # Ensure the models directory exists and a dummy model is present for testing
+# This is crucial for tests to pass in a CI environment
 @pytest.fixture(scope='session', autouse=True)
 def setup_model_for_tests():
     model_dir = 'models'
@@ -16,9 +21,6 @@ def setup_model_for_tests():
         # In a real scenario, you'd ensure your CI pipeline builds/provides the model
         print(f"Creating dummy model at {model_path} for testing...")
         try:
-            import joblib
-            from sklearn.linear_model import LogisticRegression
-            from sklearn.datasets import load_iris
             iris = load_iris()
             dummy_model = LogisticRegression(max_iter=200)
             dummy_model.fit(iris.data, iris.target)
@@ -26,7 +28,7 @@ def setup_model_for_tests():
         except ImportError:
             # Fallback if sklearn/joblib not available during setup fixture itself
             with open(model_path, 'w') as f:
-                f.write("dummy content") # Just ensure the file exists
+                f.write("dummy content")  # Just ensure the file exists
         print("Dummy model setup complete.")
 
 
@@ -37,55 +39,67 @@ def client():
     with app.test_client() as client:
         yield client
 
+
 def test_predict_endpoint_valid_input(client):
     """Test the predict endpoint with valid input."""
-    # The model is now loaded when the app module is imported, no need to trigger manually.
+    # The model is now loaded when the app module is imported, no need to
+    # trigger manually.
     test_data = {
         "sepal_length": 5.1,
         "sepal_width": 3.5,
         "petal_length": 1.4,
         "petal_width": 0.2
     }
-    response = client.post('/predict', data=json.dumps(test_data), content_type='application/json')
+    response = client.post('/predict', data=json.dumps(test_data),
+                           content_type='application/json')
     assert response.status_code == 200
     data = json.loads(response.data)
     assert 'prediction' in data
     assert 'prediction_proba' in data
     assert isinstance(data['prediction'], str)
     assert isinstance(data['prediction_proba'], list)
-    assert len(data['prediction_proba']) == 3 # For 3 iris classes
+    assert len(data['prediction_proba']) == 3  # For 3 iris classes
+
 
 def test_predict_endpoint_missing_feature(client):
     """Test the predict endpoint with missing input features."""
-    # The model is now loaded when the app module is imported, no need to trigger manually.
+    # The model is now loaded when the app module is imported, no need to
+    # trigger manually.
     test_data = {
         "sepal_length": 5.1,
         "sepal_width": 3.5,
-        "petal_width": 0.2 # Missing petal_length
+        "petal_width": 0.2  # Missing petal_length
     }
-    response = client.post('/predict', data=json.dumps(test_data), content_type='application/json')
+    response = client.post('/predict', data=json.dumps(test_data),
+                           content_type='application/json')
     assert response.status_code == 400
     data = json.loads(response.data)
     assert 'error' in data
     assert "Missing expected feature" in data['error']
 
+
 def test_predict_endpoint_invalid_data_type(client):
     """Test the predict endpoint with invalid data types."""
-    # The model is now loaded when the app module is imported, no need to trigger manually.
+    # The model is now loaded when the app module is imported, no need to
+    # trigger manually.
     test_data = {
-        "sepal_length": "invalid", # Invalid type
+        "sepal_length": "invalid",  # Invalid type
         "sepal_width": 3.5,
         "petal_length": 1.4,
         "petal_width": 0.2
     }
-    response = client.post('/predict', data=json.dumps(test_data), content_type='application/json')
+    response = client.post('/predict', data=json.dumps(test_data),
+                           content_type='application/json')
     assert response.status_code == 400
     data = json.loads(response.data)
     assert 'error' in data
-    assert "could not convert string to float" in data['error'] or "Unsupported type" in data['error']
+    assert "could not convert string to float" in data['error'] or \
+           "Unsupported type" in data['error']
+
 
 def test_home_endpoint(client):
     """Test the home endpoint."""
     response = client.get('/')
     assert response.status_code == 200
-    assert b"MLOps Iris Prediction API. Use /predict endpoint." in response.data
+    assert b"MLOps Iris Prediction API. Use /predict endpoint." \
+           in response.data

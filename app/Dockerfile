@@ -1,25 +1,26 @@
 # app/Dockerfile
+
+# Use an official Python runtime as a parent image
 FROM python:3.9-slim-buster
 
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy requirements file first to leverage Docker cache
+# Copy the requirements file into the container
 COPY requirements.txt .
 
-# Install dependencies
+# Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
+# Copy the application code into the container
 COPY . .
 
-# Ensure the 'models' and 'scripts' directories exist and copy contents
-# Note: In a real pipeline, the trained model would be downloaded from an artifact store
-# For this assessment, we assume the model is built into the image or copied during deploy
-COPY models/ models/
-COPY scripts/ scripts/
+# Create a directory for models and ensure it exists
+RUN mkdir -p models
 
-# Expose the port the Flask app runs on
+# Expose port 5000 for the Flask application
 EXPOSE 5000
 
-# Run the Flask app with Gunicorn for production
+# Run the Gunicorn server when the container launches
+# Assuming your Flask app instance is named 'app' in 'app.py'
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app.app:app"]

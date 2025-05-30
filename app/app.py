@@ -4,10 +4,13 @@ import joblib
 import pandas as pd
 import os
 
+
 app = Flask(__name__)
+
 
 MODEL_PATH = 'models/iris_logistic_regression_model.joblib'
 model = None
+
 
 def load_model():
     """Loads the trained model from the specified path."""
@@ -17,20 +20,22 @@ def load_model():
         print(f"Model loaded successfully from {MODEL_PATH}")
     except Exception as e:
         print(f"Error loading model: {e}")
-        model = None # Ensure model is None if loading fails
+        model = None  # Ensure model is None if loading fails
 
 
-load_model() # Call load_model immediately when the app module is loaded
+load_model()  # Call load_model immediately when the app module is loaded
 
 
 @app.route('/')
 def home():
     return "MLOps Iris Prediction API. Use /predict endpoint."
 
+
 @app.route('/predict', methods=['POST'])
 def predict():
     if model is None:
-        return jsonify({"error": "Model not loaded. Please check server logs."}), 500
+        return jsonify({"error": "Model not loaded. Please check server logs."}), \
+            500
 
     try:
         json_data = request.get_json(force=True)
@@ -44,7 +49,8 @@ def predict():
 
         # Convert input to DataFrame, ensuring column order matches training data
         # Based on preprocessed column names in scripts/preprocess.py
-        feature_names = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
+        feature_names = ['sepal_length', 'sepal_width',
+                         'petal_length', 'petal_width']
         input_df = pd.DataFrame([json_data], columns=feature_names)
 
         prediction = model.predict(input_df)
@@ -59,14 +65,18 @@ def predict():
             'prediction_proba': prediction_proba
         })
     except KeyError as e:
-        return jsonify({"error": f"Missing expected feature: {e}. Please provide all features: {feature_names}"}), 400
+        return jsonify({"error": f"Missing expected feature: {e}. "
+                                 f"Please provide all features: {feature_names}"}), \
+            400
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
 
 if __name__ == '__main__':
     # Ensure the 'models' directory exists when running locally for development
     os.makedirs('models', exist_ok=True)
-    # If running locally, you might want to train the model first or copy a pre-trained one
+    # If running locally, you might want to train the model first or copy a
+    # pre-trained one
     if not os.path.exists(MODEL_PATH):
         print("Model not found. Please run 'python scripts/train.py' first.")
     app.run(debug=True, host='0.0.0.0', port=5000)
