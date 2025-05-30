@@ -38,7 +38,7 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v2'
 
-      # NEW STEP: Configure gcloud for Docker and gsutil
+      # Configure gcloud for Docker and gsutil
       - name: Configure gcloud for Docker and gsutil
         run: gcloud auth configure-docker
 
@@ -77,6 +77,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # NEW/COPIED STEPS: Authenticate and set up gcloud for this job
+      - name: Authenticate to Google Cloud (for API monitoring)
+        id: 'auth-monitor'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+          project_id: '${{ secrets.GCP_PROJECT_ID }}'
+
+      - name: Set up Google Cloud SDK (for API monitoring)
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      # If this job were to use gsutil or docker, you would add:
+      # - name: Configure gcloud for Docker and gsutil (if needed)
+      #   run: gcloud auth configure-docker
 
       - name: Set up Python
         uses: actions/setup-python@v5
