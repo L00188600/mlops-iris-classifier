@@ -34,9 +34,12 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     if model is None:
-        return jsonify({"error": "Model not loaded. "
-                                 "Please check server logs."}), \
-            500
+        return jsonify({
+            "error": (
+                "Model not loaded. "
+                "Please check server logs."
+            )
+        }), 500
 
     try:
         json_data = request.get_json(force=True)
