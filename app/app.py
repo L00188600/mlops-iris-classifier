@@ -17,12 +17,16 @@ def home():
 def predict():
     try:
         input_data = request.get_json()
-        expected_features = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
-        
+        expected_features = [
+            'sepal_length', 'sepal_width', 'petal_length', 'petal_width'
+        ]
+
         # Check for missing features
         for feature in expected_features:
             if feature not in input_data:
-                return jsonify({"error": f"Missing expected feature: {feature}"}), 400
+                return jsonify({
+                    "error": f"Missing expected feature: {feature}"
+                }), 400
 
         # Create a DataFrame with the expected features
         input_df = pd.DataFrame([input_data])
