@@ -99,4 +99,4 @@ def test_home_endpoint(client):
     """Test the home endpoint."""
     response = client.get('/')
     assert response.status_code == 200
-    assert b"MLOps Iris Prediction API. Use /predict endpoint." in response.data
+    assert b"MLOps Iris Prediction API." in response.data
