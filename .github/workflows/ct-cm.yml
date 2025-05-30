@@ -35,6 +35,13 @@ jobs:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
           project_id: '${{ secrets.GCP_PROJECT_ID }}'
 
+      - name: Set up Google Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      # NEW STEP: Configure gcloud for Docker and gsutil
+      - name: Configure gcloud for Docker and gsutil
+        run: gcloud auth configure-docker
+
       - name: Download training data from GCS (if applicable)
         run: |
           # Example: gsutil cp gs://your-gcs-bucket/data.csv data.csv
@@ -105,7 +112,7 @@ jobs:
           curl -f --retry 5 --retry-delay 10 "${HOME_URL}"
 
           echo "Testing predict endpoint (after 30 seconds for app to fully " \
-               "start)..." # Split for 78-char limit
+               "start)..."
           sleep 30 # Give the Flask app some time to load the model after deployment
 
           # Example test data
