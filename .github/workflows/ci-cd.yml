@@ -103,6 +103,10 @@ jobs:
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           IMAGE_NAME: mlops-iris-classifier
         run: |
+          # Add a small delay for SSH key propagation
+          echo "Waiting 30 seconds for SSH key propagation..."
+          sleep 30
+
           # Use --ssh-flag to pass SSH options.
           # In production, consider pre-adding host keys.
           # For CI/CD, these flags help prevent prompts/errors.
