@@ -52,12 +52,15 @@ jobs:
           BUCKET_NAME: mlops-iris-model-bucket-${{ secrets.GCP_PROJECT_ID }} # Dynamic bucket name
         run: |
           # Create bucket if it doesn't exist (only if it's the first time)
-          # gsutil mb -p ${PROJECT_ID} gs://${BUCKET_NAME} || true
-          # The '|| true' allows the command to fail if bucket exists without failing the step.
-          # For robustness, you'd ensure bucket creation is separate or more robust.
+          # This command ensures the bucket exists before attempting upload.
+          # The '|| true' allows the command to fail if bucket exists
+          # without failing the step.
+          gsutil mb -p "${{ env.PROJECT_ID }}" \
+            "gs://${{ env.BUCKET_NAME }}" || true
 
           # Upload the trained model
-          gsutil cp models/iris_logistic_regression_model.joblib gs://${BUCKET_NAME}/iris_model/iris_logistic_regression_model.joblib
+          gsutil cp models/iris_logistic_regression_model.joblib \
+            "gs://${{ env.BUCKET_NAME }}/iris_model/iris_logistic_regression_model.joblib"
 
   monitor-deployment:
     needs: train-and-update-model # This job depends on model training
@@ -84,10 +87,10 @@ jobs:
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
         run: |
           # Get VM's external IP address
-          VM_IP=$(gcloud compute instances describe ${VM_INSTANCE_NAME} \
-                  --zone=${GCP_ZONE} \
+          VM_IP=$(gcloud compute instances describe "${{ env.VM_INSTANCE_NAME }}" \
+                  --zone="${{ env.GCP_ZONE }}" \
                   --format='get(networkInterfaces[0].accessConfigs[0].natIP)' \
-                  --project=${PROJECT_ID})
+                  --project="${{ env.PROJECT_ID }}")
 
           if [ -z "$VM_IP" ]; then
             echo "Error: Could not retrieve VM IP address."
@@ -99,9 +102,10 @@ jobs:
           HOME_URL="http://${VM_IP}:5000/"
 
           echo "Testing home endpoint..."
-          curl -f --retry 5 --retry-delay 10 $HOME_URL
+          curl -f --retry 5 --retry-delay 10 "${HOME_URL}"
 
-          echo "Testing predict endpoint (after 30 seconds for app to fully start)..."
+          echo "Testing predict endpoint (after 30 seconds for app to fully " \
+               "start)..." # Split for 78-char limit
           sleep 30 # Give the Flask app some time to load the model after deployment
 
           # Example test data
@@ -109,7 +113,7 @@ jobs:
 
           # Send a POST request to the predict endpoint
           response=$(curl -s -X POST -H "Content-Type: application/json" \
-                           -d "${TEST_DATA}" ${API_URL})
+                           -d "${TEST_DATA}" "${API_URL}")
 
           echo "API Response: ${response}"
 
