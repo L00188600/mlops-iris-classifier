@@ -18,8 +18,9 @@ def setup_model_for_tests():
     if not os.path.exists(model_path):
         os.makedirs(model_dir, exist_ok=True)
         # Create a dummy joblib file if it doesn't exist for testing purposes
-        # In a real scenario, you'd ensure your CI pipeline builds/provides
-        # the model
+        # Changed this line for E501 compliance
+        # In a real scenario, you'd ensure your CI pipeline builds/provides the
+        # model
         print(f"Creating dummy model at {model_path} for testing...")
         try:
             iris = load_iris()
