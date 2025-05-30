@@ -78,7 +78,7 @@ def predict():
 
 
 if __name__ == '__main__':
-    # Ensure the 'models' directory exists 
+    # Ensure the 'models' directory exists
     os.makedirs('models', exist_ok=True)
     # If running locally, you might want to train the model first or copy a
     # pre-trained one
