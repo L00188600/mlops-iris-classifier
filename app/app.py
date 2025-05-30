@@ -49,7 +49,7 @@ def predict():
         #   "petal_width": 0.2
         # }
 
-        # Convert input to DataFrame, ensuring column order matches training data
+        # Convert input to DataFrame, ensuring column is like training
         # Based on preprocessed column names in scripts/preprocess.py
         feature_names = ['sepal_length', 'sepal_width',
                          'petal_length', 'petal_width']
@@ -78,7 +78,7 @@ def predict():
 
 
 if __name__ == '__main__':
-    # Ensure the 'models' directory exists when running locally for development
+    # Ensure the 'models' directory exists 
     os.makedirs('models', exist_ok=True)
     # If running locally, you might want to train the model first or copy a
     # pre-trained one
