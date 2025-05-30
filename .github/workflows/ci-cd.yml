@@ -37,7 +37,7 @@ jobs:
 
       - name: Run pytest tests
         env:
-          PYTHONPATH: . # THIS IS THE ADDED LINE
+          PYTHONPATH: .
         run: |
           pytest tests/test_model_api.py
           pytest tests/test_preprocessing.py
@@ -90,9 +90,8 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v2'
 
-      # NEW/MODIFIED STEP: Set up SSH agent with private key
       - name: Set up SSH agent
-        uses: webfactory/ssh-agent@v0.8.0 # Use a specific version for stability
+        uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
@@ -104,28 +103,36 @@ jobs:
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           IMAGE_NAME: mlops-iris-classifier
         run: |
+          # Use --ssh-flag to pass SSH options.
+          # In production, consider pre-adding host keys.
+          # For CI/CD, these flags help prevent prompts/errors.
+          gcloud compute ssh "${{ env.VM_USER }}@${{ env.VM_INSTANCE_NAME }}" \
+            --zone="${{ env.GCP_ZONE }}" \
+            --project="${{ env.PROJECT_ID }}" \
+            --tunnel-through-iap \
+            --ssh-flag="-o StrictHostKeyChecking=no" \
+            --ssh-flag="-o UserKnownHostsFile=/dev/null" \
+            --command="
+              # Ensure Docker is installed and running
+              sudo apt-get update
+              sudo apt-get install -y docker.io
+              sudo systemctl start docker
+              sudo systemctl enable docker
 
-          # Ensure strict host key checking is off for CI/CD for first connection or if VM reboots
-          # In production, consider pre-adding host keys or more robust host key management
-          SSH_OPTIONS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+              # Authenticate Docker to Google Container Registry
+              sudo gcloud auth configure-docker --quiet
 
-          # Transfer and execute deployment script on the VM
-          gcloud compute ssh ${VM_USER}@${VM_INSTANCE_NAME} --zone=${GCP_ZONE} ${SSH_OPTIONS} --project=${PROJECT_ID} --tunnel-through-iap --command="
-            # Ensure Docker is installed and running
-            sudo apt-get update && sudo apt-get install -y docker.io
-            sudo systemctl start docker
-            sudo systemctl enable docker
+              # Pull the new image
+              sudo docker pull \
+                gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-            # Authenticate Docker to Google Container Registry
-            sudo gcloud auth configure-docker --quiet
+              # Stop and remove any old running containers
+              sudo docker stop ${{ env.IMAGE_NAME }} || true
+              sudo docker rm ${{ env.IMAGE_NAME }} || true
 
-            # Pull the new image
-            sudo docker pull gcr.io/${PROJECT_ID}/${IMAGE_NAME}:${GITHUB_SHA}
-
-            # Stop and remove any old running containers
-            sudo docker stop ${IMAGE_NAME} || true
-            sudo docker rm ${IMAGE_NAME} || true
-
-            # Run the new container, mapping port 5000 and removing it on exit
-            sudo docker run -d --restart always --name ${IMAGE_NAME} -p 5000:5000 gcr.io/${PROJECT_ID}/${IMAGE_NAME}:${GITHUB_SHA}
-          "
+              # Run the new container, mapping port 5000 and removing it on exit
+              sudo docker run -d --restart always \
+                --name ${{ env.IMAGE_NAME }} \
+                -p 5000:5000 \
+                gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            "
